@@ -3,8 +3,10 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { ThemeContextProvider } from "./lib/context/themeContext.jsx";
+import { AuthContextProvider } from "./lib/context/authContext.jsx";
 
 import App from "./App.jsx";
 import Home from "./pages/Home.jsx";
@@ -39,9 +41,11 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <ThemeContextProvider>
-        <App />
-      </ThemeContextProvider>
+      <AuthContextProvider>
+        <ThemeContextProvider>
+          <App />
+        </ThemeContextProvider>
+      </AuthContextProvider>
     ),
     errorElement: <ErrorElement />,
     children: [
@@ -100,6 +104,7 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
+      <ReactQueryDevtools />
       <Toaster
         toastOptions={{
           position: "bottom-center",

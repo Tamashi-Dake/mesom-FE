@@ -1,12 +1,12 @@
-import useCurrentUser from "../../hooks/useCurrentUser";
+import { useCurrentUser } from "../../lib/context/authContext";
 import Tab from "../common/Tab";
 import Button from "../shared/Button";
 import HeaderWrapper from "./HeaderWrapper";
 import MobileSidebar from "./MobileSidebar";
 
 const HomeHeader = ({ activeTab, onTabChange }) => {
-  const currentUser = useCurrentUser();
-  const isVerified = currentUser.data?.verified;
+  const { currentUser } = useCurrentUser();
+  const isVerified = currentUser?.verified;
   return (
     <HeaderWrapper classname={"flex justify-between flex-col p-0"}>
       <div className="flex justify-between p-4 pb-2">

@@ -9,11 +9,11 @@ import LoadingSpinner from "../common/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
 import UserCardInterface from "../shared/UserCardInterface";
 import { AiOutlineClose } from "react-icons/ai";
-import useCurrentUser from "../../hooks/useCurrentUser";
+import { useCurrentUser } from "../../lib/context/authContext";
 
 const AddUserModal = ({ closeModal }) => {
   const navigate = useNavigate();
-  const { data: currentUser } = useCurrentUser();
+  const { currentUser } = useCurrentUser();
   const [inputValue, setInputValue] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const { users, addUser, removeUser, resetUsers } = useAddUserStore();
@@ -42,7 +42,7 @@ const AddUserModal = ({ closeModal }) => {
     setInputValue(value);
   };
   const handleAddUser = (user) => {
-    addUser(user, currentUser.verified);
+    addUser(user, currentUser?.verified);
   };
   const handleRemoveUser = (userId) => {
     removeUser(userId);

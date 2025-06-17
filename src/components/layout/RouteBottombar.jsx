@@ -2,10 +2,10 @@ import { useMemo } from "react";
 import { routes as staticRoutes } from "../shared/config";
 
 import RouteItem from "../shared/RouteItem";
-import useCurrentUser from "../../hooks/useCurrentUser";
+import { useCurrentUser } from "../../lib/context/authContext";
 
 const RouteBottomBar = () => {
-  const currentUser = useCurrentUser();
+  const { currentUser } = useCurrentUser();
 
   const routes = useMemo(() => {
     if (!currentUser) return staticRoutes;
@@ -15,7 +15,7 @@ const RouteBottomBar = () => {
       if (route.path === "/profile") {
         return {
           ...route,
-          path: `/profile/${currentUser.data?.username}`,
+          path: `/profile/${currentUser?.username}`,
         };
       }
       return route;

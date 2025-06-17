@@ -5,7 +5,6 @@ import {
   FaUserSlash,
   FaUserXmark,
 } from "react-icons/fa6";
-import useCurrentUser from "../../hooks/useCurrentUser";
 import { useDeletePost } from "../../hooks/usePost";
 import {
   IoIosMore,
@@ -30,6 +29,7 @@ import { useMemo, useState } from "react";
 import { RiUnpinLine } from "react-icons/ri";
 import { useFollowUser } from "../../hooks/useUser";
 import { popupVariant } from "../shared/config";
+import { useCurrentUser } from "../../lib/context/authContext";
 
 const pinModalData = [
   {
@@ -83,13 +83,13 @@ const PostOptions = ({
   postParam,
   queryType,
 }) => {
-  const currentUser = useCurrentUser();
-  const isOwner = currentUser.data._id === authorId;
-  // const isPinned = currentUser.data.pinnedPost === postId;
+  const { currentUser } = useCurrentUser();
+  const isOwner = currentUser?._id === authorId;
+  // const isPinned = currentUser?.pinnedPost === postId;
   const [isPinned, setIsPinned] = useState(false);
   const [userIsBlocked, setUserIsBlocked] = useState(false);
   const [allowNotifications, setAllowNotifications] = useState(true);
-  const userIsFollowed = currentUser.data.following.includes(authorId);
+  const userIsFollowed = currentUser?.following.includes(authorId);
 
   const deleteMutation = useDeletePost(queryType, postId, postParam);
   const followMutation = useFollowUser(authorId, true);

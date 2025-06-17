@@ -1,11 +1,11 @@
 import { twMerge } from "tailwind-merge";
 import ProfileImages from "../profile/ProfileImages";
 import FollowButton from "./FollowButton";
-import useCurrentUser from "../../hooks/useCurrentUser";
+import { useCurrentUser } from "../../lib/context/authContext";
 
 const UserTooltip = ({ children, user, inPost, inModal }) => {
-  const currentUser = useCurrentUser();
-  const isMyProfile = currentUser.data?._id === user?._id;
+  const { currentUser } = useCurrentUser();
+  const isMyProfile = currentUser?._id === user?._id;
   return (
     <>
       <div className="group relative">

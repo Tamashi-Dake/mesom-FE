@@ -1,7 +1,5 @@
 import { useMemo } from "react";
 
-import useCurrentUser from "../../hooks/useCurrentUser";
-
 import { routes as staticRoutes } from "../shared/config";
 import RouteItem from "../shared/RouteItem";
 import RouteCreatePost from "../shared/RouteCreatePost";
@@ -10,9 +8,10 @@ import { TbLogout } from "react-icons/tb";
 import ActionLogout from "../modal/ActionLogout";
 import { useModal } from "../../hooks/useModal";
 import DisplaySettings from "../shared/DisplaySetting";
+import { useCurrentUser } from "../../lib/context/authContext";
 
 const RouteSidebar = () => {
-  const currentUser = useCurrentUser();
+  const { currentUser } = useCurrentUser();
   const logoutModal = useModal();
 
   // Dùng useMemo để tạo lại routes khi user thay đổi
@@ -24,7 +23,7 @@ const RouteSidebar = () => {
       if (route.path === "/profile") {
         return {
           ...route,
-          path: `/profile/${currentUser.data?.username}`,
+          path: `/profile/${currentUser?.username}`,
         };
       }
       return route;

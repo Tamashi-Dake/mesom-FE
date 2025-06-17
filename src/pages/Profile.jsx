@@ -15,13 +15,13 @@ import UserProfile from "../components/profile/UserProfile";
 import Post from "../components/post/Post";
 import useInfiniteScroll from "../hooks/useInfiniteScroll";
 import LoadingSpinner from "../components/common/LoadingSpinner";
-import useCurrentUser from "../hooks/useCurrentUser";
 import getMessageForTab from "../helper/getMessageForTab";
 import { SEO } from "../components/common/SEO";
+import { useCurrentUser } from "../lib/context/authContext";
 
 const Profile = () => {
   const { username } = useParams();
-  const currentUser = useCurrentUser();
+  const { currentUser } = useCurrentUser();
 
   const [postType, setPostType] = useState("userPosts");
   // const [pageTitle, setPageTitle] = useState("userPosts");
@@ -31,7 +31,7 @@ const Profile = () => {
     queryFn: () => getUserByUsername(username),
   });
   const userId = userQuery.data?._id;
-  const isMyProfile = currentUser.data?._id === userId;
+  const isMyProfile = currentUser?._id === userId;
   const currentTabMessage = getMessageForTab(postType, isMyProfile, username);
   let pageTitle = "";
 

@@ -1,16 +1,16 @@
 import { twMerge } from "tailwind-merge";
 import ImageView from "../shared/ImageView";
-import useCurrentUser from "../../hooks/useCurrentUser";
 import { useEffect, useState } from "react";
 import { formatDate } from "../../helper/formatDate";
+import { useCurrentUser } from "../../lib/context/authContext";
 
 const Message = ({ message, innerRef }) => {
-  const { data: currentUser } = useCurrentUser();
+  const { currentUser } = useCurrentUser();
   const [isMe, setIsMe] = useState(false);
-  //   const isMe = message.sender._id === currentUser._id;
+  //   const isMe = message.sender._id === currentUser?._id;
   useEffect(() => {
-    if (message.sender._id === currentUser._id) setIsMe(true);
-  }, [currentUser._id, message.sender._id]);
+    if (message.sender._id === currentUser?._id) setIsMe(true);
+  }, [currentUser?._id, message.sender._id]);
   return (
     <div
       ref={innerRef}

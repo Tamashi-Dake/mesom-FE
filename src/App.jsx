@@ -5,7 +5,7 @@ import { useMediaQuery } from "usehooks-ts";
 import { twMerge } from "tailwind-merge";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 
-import useCurrentUser from "./hooks/useCurrentUser";
+import { useCurrentUser } from "./lib/context/authContext";
 
 import { config } from "./components/shared/config";
 import FameSidebar from "./components/layout/FameSidebar";
@@ -19,19 +19,22 @@ import "./App.css";
 
 function App() {
   const inBigScreen = useMediaQuery("(min-width: 1000px)");
-  const currentUser = useCurrentUser();
+  const { currentUser, isLoadingCurrentUser } = useCurrentUser();
+
   const navigate = useNavigate();
   let location = useLocation();
+
   const { title, icon } = config[location.pathname] || config["/"];
   const inConversation = location.pathname.includes("/conversation");
 
   useEffect(() => {
-    if (!currentUser.isLoading && !currentUser.data) {
+    if (!isLoadingCurrentUser && !currentUser) {
+      // console.log(currentUser);
       navigate("/auth");
     }
-  }, [currentUser.isLoading, currentUser.data, navigate]);
+  }, [isLoadingCurrentUser, currentUser, navigate]);
 
-  if (currentUser.isLoading) {
+  if (isLoadingCurrentUser) {
     return <LoadingSpinner />;
   }
 

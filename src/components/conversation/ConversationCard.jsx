@@ -2,16 +2,16 @@ import cn from "clsx";
 import { Link } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
 
-import useCurrentUser from "../../hooks/useCurrentUser";
 import { formatDate } from "../../helper/formatDate";
 
 import { ToolTip } from "../common/Tooltip";
 import { Button } from "@headlessui/react";
 
 import { IoIosMore } from "react-icons/io";
+import { useCurrentUser } from "../../lib/context/authContext";
 
 const ConversationCard = ({ conversation, innerRef }) => {
-  const currentUser = useCurrentUser();
+  const { currentUser } = useCurrentUser();
   return (
     <Link
       ref={innerRef}
@@ -47,7 +47,7 @@ const ConversationCard = ({ conversation, innerRef }) => {
             className="h-full w-full rounded-full object-cover"
             src={
               conversation.participants.find(
-                (participant) => participant._id !== currentUser._id,
+                (participant) => participant._id !== currentUser?._id,
               ).profile?.avatarImg || "/placeholder.png"
             }
           />
@@ -59,10 +59,10 @@ const ConversationCard = ({ conversation, innerRef }) => {
             {conversation.isGroup
               ? conversation.name
               : conversation.participants.find(
-                  (participant) => participant._id !== currentUser._id,
+                  (participant) => participant._id !== currentUser?._id,
                 ).displayName ||
                 conversation.participants.find(
-                  (participant) => participant._id !== currentUser._id,
+                  (participant) => participant._id !== currentUser?._id,
                 ).username}
           </span>
           <div className="flex min-w-0 gap-1 text-sm tracking-tight text-main-secondary">

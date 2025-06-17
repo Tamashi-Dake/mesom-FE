@@ -1,12 +1,12 @@
 import { Button } from "@headlessui/react";
-import useCurrentUser from "../../hooks/useCurrentUser";
 import { useFollowUser } from "../../hooks/useUser";
+import { useCurrentUser } from "../../lib/context/authContext";
 
 const FollowButton = ({ userId, refetchSingle }) => {
-  const currentUser = useCurrentUser();
+  const { currentUser } = useCurrentUser();
   const followUserMutation = useFollowUser(userId, refetchSingle);
 
-  const isFollowing = currentUser.data.following.includes(userId);
+  const isFollowing = currentUser?.following.includes(userId);
 
   const handleFollow = () => {
     followUserMutation.mutate({ userId: userId, notificationType: "follow" });

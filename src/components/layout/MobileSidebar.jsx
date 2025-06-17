@@ -1,5 +1,5 @@
 import { useModal } from "../../hooks/useModal";
-import useCurrentUser from "../../hooks/useCurrentUser";
+import { useCurrentUser } from "../../lib/context/authContext";
 
 import MobileSidebarModal from "../modal/MobileSidebarModal";
 import { Modal } from "../modal/Modal";
@@ -15,7 +15,7 @@ const variant = {
 };
 
 const MobileSidebar = () => {
-  const { data: user } = useCurrentUser();
+  const { currentUser } = useCurrentUser();
   const modal = useModal();
   return (
     <>
@@ -26,11 +26,11 @@ const MobileSidebar = () => {
         open={modal.open}
         closeModal={modal.closeModal}
       >
-        <MobileSidebarModal user={user} />
+        <MobileSidebarModal user={currentUser} />
       </Modal>
       <div className="avatar h-8 w-8 xs:hidden" onClick={modal.openModal}>
         <img
-          src={user?.profile.avatarImg || "/placeholder.png"}
+          src={currentUser?.profile.avatarImg || "/placeholder.png"}
           alt="User Avatar"
           className="h-full w-full rounded-full object-cover"
         />

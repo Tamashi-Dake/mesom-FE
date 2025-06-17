@@ -3,11 +3,11 @@ import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
 
-import useCurrentUser from "../../hooks/useCurrentUser";
 import { useCreatePost } from "../../hooks/usePost";
 
 import CreatePostActions from "./CreatPostActions";
 import ImageView from "../shared/ImageView";
+import { useCurrentUser } from "../../lib/context/authContext";
 
 const CreatePost = ({
   postId,
@@ -18,7 +18,7 @@ const CreatePost = ({
   onPost,
   modal = false,
 }) => {
-  const currentUser = useCurrentUser();
+  const { currentUser } = useCurrentUser();
   const { postId: postParam } = useParams();
 
   const inReplyModal = postParam ? false : true;
@@ -55,13 +55,13 @@ const CreatePost = ({
       <div className="avatar h-12 w-12 overflow-hidden rounded-full">
         <img
           className="h-full w-full object-cover"
-          src={currentUser.data?.profile.avatarImg || "/placeholder.png"}
+          src={currentUser?.profile.avatarImg || "/placeholder.png"}
         />
       </div>
       <form className="flex w-[90%] flex-col gap-2" onSubmit={handleSubmit}>
         {/* TODO: Add Paste image from clipboard */}
         <TextArea
-          maxLength={currentUser.data?.verified ? 1000 : 400}
+          maxLength={currentUser?.verified ? 1000 : 400}
           minRows={3}
           maxRows={7}
           className="w-full resize-none bg-main-background p-0 text-lg text-main-primary focus:outline-none [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2"
@@ -80,7 +80,7 @@ const CreatePost = ({
         )}
 
         <CreatePostActions
-          verifiedUser={currentUser.data?.verified}
+          verifiedUser={currentUser?.verified}
           handleAddEmoji={setText}
           textLength={text.length}
           imagesLength={previewImages.length}

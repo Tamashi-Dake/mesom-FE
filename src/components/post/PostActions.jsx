@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
 import cn from "clsx";
 
-import useCurrentUser from "../../hooks/useCurrentUser";
 import { useModal } from "../../hooks/useModal";
 import {
   useBookmarkPost,
@@ -32,16 +31,17 @@ import { ToolTip } from "../common/Tooltip";
 import { AnimatePresence, motion } from "framer-motion";
 import { popupVariant } from "../shared/config";
 import toast from "react-hot-toast";
+import { useCurrentUser } from "../../lib/context/authContext";
 
 const PostActions = ({ post, queryType }) => {
   const { postId: postParam, username: userParam } = useParams();
   const [debouncedPending, setDebouncedPending] = useState(false);
-  const currentUser = useCurrentUser();
+  const { currentUser } = useCurrentUser();
   const replyModal = useModal();
 
   const inPostPage = !!postParam;
   const isViewingPost = postParam === post._id;
-  const isViewingMyProfile = userParam === currentUser.data.username;
+  const isViewingMyProfile = userParam === currentUser?.username;
   const keysToOmit = [
     "userLikes",
     "userShared",
@@ -50,9 +50,9 @@ const PostActions = ({ post, queryType }) => {
     "views",
   ];
   const simplifiedPost = omit(post, keysToOmit);
-  const isLiked = post.userLikes.includes(currentUser.data._id);
-  const isShared = post.userShared.includes(currentUser.data._id);
-  const isBookmarked = currentUser.data?.bookmarks.some(
+  const isLiked = post.userLikes.includes(currentUser?._id);
+  const isShared = post.userShared.includes(currentUser?._id);
+  const isBookmarked = currentUser?.bookmarks.some(
     (bookmark) => bookmark.post === post._id,
   );
 
