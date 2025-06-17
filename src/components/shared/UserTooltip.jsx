@@ -2,9 +2,11 @@ import { twMerge } from "tailwind-merge";
 import ProfileImages from "../profile/ProfileImages";
 import FollowButton from "./FollowButton";
 import { useCurrentUser } from "../../lib/context/authContext";
+import { useNavigate } from "react-router-dom";
 
 const UserTooltip = ({ children, user, inPost, inModal }) => {
   const { currentUser } = useCurrentUser();
+  const navigate = useNavigate();
   const isMyProfile = currentUser?._id === user?._id;
   return (
     <>
@@ -18,7 +20,13 @@ const UserTooltip = ({ children, user, inPost, inModal }) => {
             inModal ? "hidden" : "",
           )}
         >
-          <a href={`/profile/${user?.username}`}>
+          <div
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              navigate(`/profile/${user?.username}`);
+            }}
+          >
             <ProfileImages
               inUserTooltip
               avatarImg={user?.profile.avatarImg}
@@ -61,7 +69,7 @@ const UserTooltip = ({ children, user, inPost, inModal }) => {
                 <span> Followers</span>
               </li>
             </ul>
-          </a>
+          </div>
         </div>
       </div>
     </>

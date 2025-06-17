@@ -18,7 +18,6 @@ const Post = ({
   const authorName = post?.parent?.authorName;
   // console.log("rerender post", post.text);
   return (
-    // Invalid: bị lồng thẻ a
     <Link
       ref={innerRef}
       to={`/post/${post?._id}`}

@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { formatDate } from "../../helper/formatDate";
 import UserTooltip from "../shared/UserTooltip";
 import { twMerge } from "tailwind-merge";
@@ -6,10 +6,17 @@ import { twMerge } from "tailwind-merge";
 const PostInfo = ({ author, createDate, postId, inModal }) => {
   const date = formatDate(createDate, "post");
   const { postId: postParam } = useParams();
+  const navigate = useNavigate();
+
   const isViewingPost = postParam === postId;
   return (
     <div className="flex items-center gap-2">
-      <Link to={`/profile/${author.username}`}>
+      <div
+        onClick={(e) => {
+          e.preventDefault();
+          navigate(`/profile/${author.username}`);
+        }}
+      >
         <UserTooltip user={author} inPost inModal={inModal}>
           <div className="flex flex-col">
             <span
@@ -27,16 +34,16 @@ const PostInfo = ({ author, createDate, postId, inModal }) => {
             )}
           </div>
         </UserTooltip>
-      </Link>
+      </div>
       {!isViewingPost && (
         <div className="flex gap-1 text-sm text-main-secondary">
           <UserTooltip user={author} inPost>
-            <Link
-              to={`/profile/${author.username}`}
+            <div
+              onClick={() => navigate(`/profile/${author.username}`)}
               className="truncate whitespace-pre-line break-words"
             >
               @{author.username}
-            </Link>
+            </div>
           </UserTooltip>
 
           <>

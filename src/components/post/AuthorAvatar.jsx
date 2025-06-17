@@ -1,10 +1,17 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import UserTooltip from "../shared/UserTooltip";
 
 const AuthorAvatar = ({ author, isReply = false, inModal }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col items-center gap-4 self-stretch">
-      <Link to={`/profile/${author?.username}`}>
+      <div
+        onClick={(e) => {
+          e.preventDefault();
+          navigate(`/profile/${author?.username}`);
+        }}
+      >
         <UserTooltip user={author} inPost inModal={inModal}>
           <div className="h-12 w-12 overflow-hidden rounded-full">
             <img
@@ -13,7 +20,7 @@ const AuthorAvatar = ({ author, isReply = false, inModal }) => {
             />
           </div>
         </UserTooltip>
-      </Link>
+      </div>
       {isReply && (
         <div className="reply-line-wrapper flex flex-1 justify-center">
           <div className="reply-line border-[1px] border-light-border dark:border-dark-border"></div>
