@@ -10,6 +10,9 @@ import { useNavigate } from "react-router-dom";
 import UserCardInterface from "../shared/UserCardInterface";
 import { AiOutlineClose } from "react-icons/ai";
 import { useCurrentUser } from "../../lib/context/authContext";
+import { useMutation } from "@tanstack/react-query";
+import { checkCreateConversationConditions } from "@/services/conversationService";
+import toast from "react-hot-toast";
 
 const AddUserModal = ({ closeModal }) => {
   const navigate = useNavigate();
@@ -27,6 +30,18 @@ const AddUserModal = ({ closeModal }) => {
       (lastPage) => lastPage.nextSkip || undefined,
     );
 
+  const checkCreateConversationConditionMutation = useMutation({
+    mutationFn: checkCreateConversationConditions,
+    onSuccess: (data) => {
+      closeModal();
+      if (data && data._id) navigate(`/conversation/${data._id}`);
+      else navigate("/conversation");
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message);
+    },
+  });
+
   useEffect(() => {
     resetUsers();
   }, []);
@@ -41,16 +56,21 @@ const AddUserModal = ({ closeModal }) => {
   const onInputValueChange = (value) => {
     setInputValue(value);
   };
+
   const handleAddUser = (user) => {
     addUser(user, currentUser?.verified);
   };
+
   const handleRemoveUser = (userId) => {
     removeUser(userId);
   };
+
   const handleSubmit = () => {
-    closeModal();
-    navigate("/conversation");
+    checkCreateConversationConditionMutation.mutate({
+      participants: users.map((user) => user._id),
+    });
   };
+
   return (
     <>
       <DefaultHeader label="Add User" className={"flex justify-between"}>
@@ -58,6 +78,7 @@ const AddUserModal = ({ closeModal }) => {
           label={"Next"}
           className={"inline-block"}
           onClick={handleSubmit}
+          disabled={users.length === 0}
         />
       </DefaultHeader>
       <section>

@@ -43,14 +43,20 @@ const ConversationCard = ({ conversation, innerRef }) => {
               ))
           )
         ) : (
-          <img
-            className="h-full w-full rounded-full object-cover"
-            src={
+          // TODO - Urgent: Refactor now
+          (() => {
+            // Nếu chỉ có 1 participant và đó là currentUser, lấy avatar của currentUser
+            const otherParticipant =
               conversation.participants.find(
                 (participant) => participant._id !== currentUser?._id,
-              ).profile?.avatarImg || "/placeholder.png"
-            }
-          />
+              ) || conversation.participants[0];
+            return (
+              <img
+                className="h-full w-full rounded-full object-cover"
+                src={otherParticipant?.profile?.avatarImg || "/placeholder.png"}
+              />
+            );
+          })()
         )}
       </div>
       <div className="group flex min-w-0 items-center justify-between p-2">
@@ -58,12 +64,15 @@ const ConversationCard = ({ conversation, innerRef }) => {
           <span className="truncate font-semibold tracking-tight text-main-primary hover:underline">
             {conversation.isGroup
               ? conversation.name
-              : conversation.participants.find(
-                  (participant) => participant._id !== currentUser?._id,
-                ).displayName ||
-                conversation.participants.find(
-                  (participant) => participant._id !== currentUser?._id,
-                ).username}
+              : (() => {
+                  const otherParticipant =
+                    conversation.participants.find(
+                      (participant) => participant._id !== currentUser?._id,
+                    ) || conversation.participants[0];
+                  return (
+                    otherParticipant.displayName || otherParticipant.username
+                  );
+                })()}
           </span>
           <div className="flex min-w-0 gap-1 text-sm tracking-tight text-main-secondary">
             <span className="truncate">

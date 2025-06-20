@@ -1,5 +1,10 @@
 import api from "../helper/api";
 
+export const checkCreateConversationConditions = async (postData) => {
+  const response = await api.post(`conversation/check`, postData);
+  return response.data;
+};
+
 export const createConversation = async (postData) => {
   const response = await api.post(`conversation`, postData);
   return response.data;
