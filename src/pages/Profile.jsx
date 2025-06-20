@@ -71,7 +71,7 @@ const Profile = () => {
   useEffect(() => {
     refetch();
   }, [userId, postType]);
-
+  if (userQuery.isLoading) return <LoadingSpinner />;
   return (
     <>
       <SEO title={pageTitle} />

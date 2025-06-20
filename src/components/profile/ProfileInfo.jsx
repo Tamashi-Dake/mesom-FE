@@ -22,7 +22,7 @@ const ProfileInfo = ({ user }) => {
       <div className="flex flex-wrap gap-2">
         {user?.profile.website && (
           <div className="flex items-center gap-2">
-            <FaLink className="h-4 w-4 text-slate-500" />
+            <FaLink className="h-4 w-4 shrink-0 text-slate-500" />
             <a
               href={
                 user?.profile?.website?.includes("http")

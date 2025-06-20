@@ -22,6 +22,7 @@ const variants = {
 
 const ImageView = ({
   previewImage = false,
+  isMessage = false,
   imagesCount,
   images,
   removeImage,
@@ -94,6 +95,7 @@ const ImageView = ({
                 imagesCount === 1
                   ? "m-auto w-fit rounded-2xl object-contain"
                   : "w-full object-cover",
+                isMessage && "object-cover",
               )}
               src={image.previewURL || image}
               alt={"Post Image"}
