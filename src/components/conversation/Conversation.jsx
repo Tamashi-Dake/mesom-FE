@@ -9,9 +9,19 @@ import { getMessages } from "../../services/messageService";
 import Message from "./Message";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../common/LoadingSpinner";
+import { useEffect } from "react";
+import { useSocket } from "../../hooks/useSocket";
+import { useCurrentUser } from "../../lib/context/authContext";
+import { joinConversation } from "@/lib/socket/events/conversation";
+import { ESocketEvents } from "@/enums";
+import { useTranslation } from "react-i18next";
 
 const Conversation = () => {
   const { conversationId } = useParams();
+  const { t } = useTranslation();
+
+  const { currentUser } = useCurrentUser();
+  const socket = useSocket(currentUser);
 
   const { data: conversation } = useQuery({
     queryKey: ["conversation", conversationId],
@@ -31,6 +41,18 @@ const Conversation = () => {
       getMessages({ conversationId: conversationId, skip: pageParam }),
     (lastPage) => lastPage.nextSkip || undefined,
   );
+
+  useEffect(() => {
+    if (!socket) return;
+
+    if (currentUser._id && conversation._id)
+      joinConversation(socket, currentUser._id, conversation._id);
+    else toast.error(t("somethingWentWrongTryAgainLater"));
+
+    return () => {
+      socket.off(ESocketEvents.JoinConversation);
+    };
+  }, [socket, currentUser, conversation]);
 
   return (
     <>
@@ -66,7 +88,7 @@ const Conversation = () => {
           {/* <Message />
           <Message isMe /> */}
         </div>
-        <MessageInput />
+        <MessageInput conversationId={conversation?._id} />
       </div>
     </>
   );

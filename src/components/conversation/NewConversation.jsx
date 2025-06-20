@@ -4,7 +4,6 @@ import DefaultHeader from "../layout/DefaultHeader";
 import MessageInput from "./MessageInput";
 
 const NewConversation = () => {
-  // const {currentUser} = useCurrentUser();
   const { users } = useAddUserStore();
   const conversationName = users
     .slice(0, 3)
