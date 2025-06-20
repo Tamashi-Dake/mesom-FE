@@ -15,7 +15,7 @@ const FollowButton = ({ userId, refetchSingle }) => {
     <>
       {isFollowing ? (
         <Button
-          className='dark-bg-tab shrink rounded-2xl border border-light-line-reply px-4 py-1.5 font-bold hover:border-accent-red hover:bg-accent-red/10 hover:text-accent-red hover:before:content-["Unfollow"] inner:hover:hidden dark:border-light-secondary'
+          className='dark-bg-tab shrink rounded-2xl border border-light-line-reply px-4 py-1.5 font-bold transition-all hover:border-accent-red hover:bg-accent-red/10 hover:text-accent-red hover:before:content-["Unfollow"] inner:hover:hidden dark:border-light-secondary'
           onClick={(e) => {
             e.preventDefault();
             handleFollow();
