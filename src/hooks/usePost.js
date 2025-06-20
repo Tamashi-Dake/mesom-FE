@@ -12,6 +12,7 @@ import {
 } from "../services/postsService";
 import { updatePostField } from "../helper/updateQueryData";
 import { useNavigate } from "react-router-dom";
+import { maxFileSize } from "@/constants";
 
 export const useCreatePost = (
   postId,
@@ -26,7 +27,6 @@ export const useCreatePost = (
   const [images, setImages] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
   const imgRef = useRef(null);
-  const maxFileSize = 5 * 1024 * 1024; // 5MB
 
   const postMutate = useMutation({
     mutationFn: isReply ? createReply : createPost,
