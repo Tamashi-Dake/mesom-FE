@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
-import { io, Socket } from "socket.io-client";
+import { io } from "socket.io-client";
 
 const BASE_URL =
-  import.meta.env.MODE === "DEVELOPMENT"
-    ? import.meta.env.VITE_FRONTEND_URL
+  import.meta.env.MODE === "development"
+    ? import.meta.env.VITE_BACKEND_URL
     : "/";
 
 export function useSocket(authUser) {
@@ -11,7 +11,6 @@ export function useSocket(authUser) {
 
   useEffect(() => {
     if (!authUser) return;
-
     const socket = io(BASE_URL, {
       query: { userId: authUser._id },
     });
