@@ -28,7 +28,7 @@ const Message = ({ message, innerRef }) => {
       >
         <img
           className="h-full w-full object-cover"
-          src={message.sender.profile.avatarImg || "/placeholder.png"}
+          src={message.sender.profile?.avatarImg || "/placeholder.png"}
         />
       </div>
       <div className="content flex min-w-0 flex-col gap-1">

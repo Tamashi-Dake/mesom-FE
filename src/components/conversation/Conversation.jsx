@@ -1,6 +1,6 @@
 import { redirect, useParams } from "react-router-dom";
 import { SEO } from "../common/SEO";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getConversation } from "../../services/conversationService";
 import ConversationPageHeader from "../layout/ConversationPageHeader";
 import MessageInput from "./MessageInput";
@@ -9,19 +9,28 @@ import { getMessages } from "../../services/messageService";
 import Message from "./Message";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../common/LoadingSpinner";
-import { useEffect } from "react";
-import { useSocket } from "../../hooks/useSocket";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useCurrentUser } from "../../lib/context/authContext";
-import { joinConversation } from "@/lib/socket/events/conversation";
-import { ESocketEvents } from "@/enums";
+import {
+  joinConversation,
+  leaveConversation,
+} from "@/lib/socket/events/conversation";
+import { EConversationSocketEvents } from "@/enums";
 import { useTranslation } from "react-i18next";
+import { useSocket } from "@/lib/context/socketContext";
+import useChatInfiniteScroll from "@/hooks/useChatInfiniteScroll";
 
 const Conversation = () => {
   const { conversationId } = useParams();
   const { t } = useTranslation();
 
+  const messagesEndRef = useRef(null);
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
+  const [userIsAtBottom, setUserIsAtBottom] = useState(true);
+
   const { currentUser } = useCurrentUser();
-  const socket = useSocket(currentUser);
+  const socket = useSocket();
+  const queryClient = useQueryClient();
 
   const { data: conversation } = useQuery({
     queryKey: ["conversation", conversationId],
@@ -29,30 +38,123 @@ const Conversation = () => {
   });
 
   const {
-    data: messages,
-    error,
-    isLoading,
-    isError,
-    isFetchingNextPage,
-    ref,
-  } = useInfiniteScroll(
+    messages,
+    isFetchingMessages,
+    isFetchingNextPageMessages,
+    hasNextPageMessages,
+    scrollContainerRef, // Ref for scroll container
+    scrollToBottom, // Function to scroll to bottom
+    isAtBottom, // Function to check if at bottom
+    fetchMessages,
+  } = useChatInfiniteScroll(
     ["conversation", conversationId, "messages"],
     ({ pageParam = 0 }) =>
       getMessages({ conversationId: conversationId, skip: pageParam }),
     (lastPage) => lastPage.nextSkip || undefined,
+    { enabled: !!conversationId },
+  );
+
+  // Monitor scroll position
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScrollCheck = () => {
+      setUserIsAtBottom(isAtBottom());
+    };
+
+    container.addEventListener("scroll", handleScrollCheck);
+    return () => container.removeEventListener("scroll", handleScrollCheck);
+  }, [isAtBottom]);
+
+  // Auto scroll to bottom on first load
+  useEffect(() => {
+    if (
+      shouldScrollToBottom &&
+      !isFetchingMessages &&
+      !isFetchingNextPageMessages
+    ) {
+      setTimeout(() => {
+        scrollToBottom();
+        setShouldScrollToBottom(false);
+      }, 100);
+    }
+  }, [
+    shouldScrollToBottom,
+    isFetchingMessages,
+    isFetchingNextPageMessages,
+    scrollToBottom,
+  ]);
+
+  // Socket connection effects
+  useEffect(() => {
+    if (!socket || !currentUser?._id || !conversation?._id) return;
+
+    if (currentUser._id && conversation._id) {
+      joinConversation(socket, currentUser?._id, conversationId);
+    } else {
+      toast.error(t("somethingWentWrongTryAgainLater"));
+      return;
+    }
+
+    return () => {
+      leaveConversation(socket, currentUser?._id, conversationId);
+    };
+  }, [socket, currentUser, conversation]);
+
+  const handleNewMessage = useCallback(
+    (data) => {
+      const { message, conversationId: msgConversationId, senderId } = data;
+
+      queryClient.setQueryData(
+        ["conversation", conversationId, "messages"],
+        (oldMessagePage) => {
+          if (!oldMessagePage) return oldMessagePage;
+
+          // Thêm tin nhắn mới vào trang đầu tiên (page mới nhất)
+          const newPages = [...oldMessagePage.pages];
+          const firstPage = newPages[0];
+          const messageExists = firstPage.messages.some(
+            (msg) => msg._id === message._id,
+          );
+
+          if (!messageExists) {
+            newPages[0] = {
+              ...firstPage,
+              messages: [...firstPage.messages, message],
+            };
+          }
+
+          return { ...oldMessagePage, pages: newPages };
+        },
+      );
+
+      // Auto scroll to bottom if user is near bottom or if it's user's own message
+      if (userIsAtBottom || senderId === currentUser?._id) {
+        setTimeout(scrollToBottom, 100);
+      }
+    },
+    [
+      conversationId,
+      currentUser?._id,
+      queryClient,
+      userIsAtBottom,
+      scrollToBottom,
+    ],
   );
 
   useEffect(() => {
     if (!socket) return;
 
-    if (currentUser._id && conversation._id)
-      joinConversation(socket, currentUser._id, conversation._id);
-    else toast.error(t("somethingWentWrongTryAgainLater"));
+    socket.on(EConversationSocketEvents.newMessageReceived, handleNewMessage);
 
     return () => {
-      socket.off(ESocketEvents.JoinConversation);
+      socket.off(
+        EConversationSocketEvents.newMessageReceived,
+        handleNewMessage,
+      );
     };
-  }, [socket, currentUser, conversation]);
+  }, [socket, handleNewMessage]);
 
   return (
     <>
@@ -62,33 +164,38 @@ const Conversation = () => {
           name={conversation?.name}
           onClick={() => redirect(`/conversation/${conversation?._id}/info`)}
         />
-        {/* TODO: Load from Last message location, scroll up for more */}
-        <div className="flex-1 space-y-4 overflow-y-auto p-4 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2">
-          {isLoading || (isFetchingNextPage && <LoadingSpinner />)}
-          {isError && toast.error(error.message)}
-          {messages?.pages?.map((searchPageInfo) =>
-            searchPageInfo.messages?.map((message, index, reversedMessages) => {
-              const isMessageBeforeLastMessage =
-                index === reversedMessages.length - 1;
-              return (
-                <Message
-                  innerRef={isMessageBeforeLastMessage ? ref : null}
-                  key={message._id}
-                  message={message}
-                />
-              );
-            }),
-          )}
-          {messages?.pages[0]?.message && (
+
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 space-y-4 overflow-y-auto p-4 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar]:w-2"
+        >
+          {/* Loading indicator at top when fetching more messages */}
+          {isFetchingNextPageMessages ||
+            (isFetchingMessages && (
+              <div className="flex justify-center py-2">
+                <LoadingSpinner />
+              </div>
+            ))}
+          {messages.map((message) => (
+            <Message key={message._id} message={message} />
+          ))}
+          {!isFetchingMessages && messages.length === 0 && (
             <div className="text-center text-main-primary">
-              {messages?.pages[0]?.message}
+              {t("noMessagesYet")}
             </div>
           )}
-
-          {/* <Message />
-          <Message isMe /> */}
+          {/* Scroll to bottom anchor */}
+          <div ref={messagesEndRef} />
         </div>
-        <MessageInput conversationId={conversation?._id} />
+        {!userIsAtBottom && (
+          <button
+            onClick={scrollToBottom}
+            className="fixed bottom-20 right-6 z-10 rounded-full bg-blue-500 p-2 text-white shadow-lg transition-colors hover:bg-blue-600"
+          >
+            ↓
+          </button>
+        )}
+        <MessageInput conversation={conversation} />
       </div>
     </>
   );
