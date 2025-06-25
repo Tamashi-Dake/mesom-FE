@@ -7,6 +7,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { ThemeContextProvider } from "./lib/context/themeContext.jsx";
 import { AuthContextProvider } from "./lib/context/authContext.jsx";
+import { SocketProvider } from "./lib/context/socketContext.js";
 
 import App from "./App.jsx";
 import Home from "./pages/Home.jsx";
@@ -42,9 +43,11 @@ const router = createBrowserRouter([
     path: "/",
     element: (
       <AuthContextProvider>
-        <ThemeContextProvider>
-          <App />
-        </ThemeContextProvider>
+        <SocketProvider>
+          <ThemeContextProvider>
+            <App />
+          </ThemeContextProvider>
+        </SocketProvider>
       </AuthContextProvider>
     ),
     errorElement: <ErrorElement />,
@@ -102,19 +105,19 @@ const router = createBrowserRouter([
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools />
-      <Toaster
-        toastOptions={{
-          position: "bottom-center",
-          style: {
-            background: "#333",
-            color: "#fff",
-          },
-        }}
-      />
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  </React.StrictMode>,
+  // <React.StrictMode>
+  <QueryClientProvider client={queryClient}>
+    <ReactQueryDevtools />
+    <Toaster
+      toastOptions={{
+        position: "bottom-center",
+        style: {
+          background: "#333",
+          color: "#fff",
+        },
+      }}
+    />
+    <RouterProvider router={router} />
+  </QueryClientProvider>,
+  // </React.StrictMode>,
 );

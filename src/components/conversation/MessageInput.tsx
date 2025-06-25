@@ -7,14 +7,17 @@ import { useMutation } from "@tanstack/react-query";
 import { createConversation } from "@/services/conversationService";
 import { createMessage } from "@/services/messageService";
 import useAddUserStore from "@/hooks/useStore";
-import { IParticipant } from "@/types";
+import { IConversation, INewParticipant } from "@/types";
 import { useNavigate } from "react-router-dom";
+import { useCurrentUser } from "@/lib/context/authContext";
+import { EConversationSocketEvents } from "@/enums";
+import { useSocket } from "@/lib/context/socketContext";
 
 interface IProps {
-  conversationId?: string;
+  conversation?: IConversation;
 }
 
-const MessageInput = ({ conversationId }: IProps) => {
+const MessageInput = ({ conversation }: IProps) => {
   const navigate = useNavigate();
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState<string | ArrayBuffer | null>(
@@ -23,6 +26,9 @@ const MessageInput = ({ conversationId }: IProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { users, resetUsers } = useAddUserStore();
+  const { currentUser } = useCurrentUser();
+
+  const socket = useSocket();
 
   const conversationMutation = useMutation({
     mutationFn: createConversation,
@@ -65,20 +71,20 @@ const MessageInput = ({ conversationId }: IProps) => {
     postData.append("images", fileInputRef.current?.files?.[0] || "");
 
     try {
-      if (!conversationId) {
+      if (!conversation?._id) {
         conversationMutation.mutate(
           {
-            participants: users.map((user: IParticipant) => user._id),
+            participants: users.map((user: INewParticipant) => user._id),
             name:
               users.length > 1
-                ? users.map((user: IParticipant) => user.username).join(", ")
+                ? users.map((user: INewParticipant) => user.username).join(", ")
                 : users[0].username,
           },
           {
             onSuccess: (conversation) => {
               messageMutation.mutate(
                 {
-                  conversationId: conversation._id,
+                  conversationId: conversation?._id,
                   postData,
                 },
                 {
@@ -91,16 +97,28 @@ const MessageInput = ({ conversationId }: IProps) => {
           },
         );
       } else {
-        messageMutation.mutate({
-          conversationId: conversationId,
-          postData,
-        });
+        messageMutation.mutate(
+          {
+            conversationId: conversation?._id,
+            postData,
+          },
+          {
+            onSuccess: (message) => {
+              socket?.emit(EConversationSocketEvents.newMessage, {
+                userId: currentUser._id,
+                conversation,
+                message,
+              });
+            },
+          },
+        );
       }
 
       // Clear form
       setText("");
       setImagePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
+      resetUsers();
     } catch (error) {
       console.error("Failed to send message:", error);
     }
@@ -154,8 +172,8 @@ const MessageInput = ({ conversationId }: IProps) => {
         </div>
         <button
           type="submit"
-          className="btn btn-sm btn-circle"
-          // disabled={!text.trim() && !imagePreview}
+          className="btn btn-sm btn-circle disabled:opacity-55"
+          disabled={conversationMutation.isPending || messageMutation.isPending}
         >
           <BsSend className="text-main-accent" size={20} />
         </button>
