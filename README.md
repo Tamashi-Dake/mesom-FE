@@ -1,13 +1,15 @@
 # Medium size Social Platform
 
+## Note
+
 ## TODO
 
 - [ ] Real-time Message
 
   - [x] Hide Float button, bottom route bar when in /conversation
   - [ ] Conversation
-    - [x] Add user modal
-    - [ ] Create after first message is sent, refresh and redirect to new conversation
+    - [x] "Add user" modal
+    - [x] Create after first message is sent, refresh and redirect to new conversation
     - [ ] Hide conversation with user
     - [ ] Block user
     - [ ] Update conversation modal
@@ -15,13 +17,14 @@
     - [ ] Copy message
     - [ ] React to message
     - [ ] Reply to message
-  - [ ] Load message bottom up
+  - [x] Load message bottom up
 
 - [ ] Skeleton
 
   - [x] User Card (suggested user)
   - [ ] Post (content, image)
   - [ ] User (profile,...)
+  - [ ] Message
 
 - [ ] Validate form
 

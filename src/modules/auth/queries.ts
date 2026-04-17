@@ -1,0 +1,52 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+
+import { getCurrentUser, login, register, logout } from "./api";
+
+export const useCurrentUserQuery = () => {
+  return useQuery({
+    queryKey: ["authUser"],
+    queryFn: getCurrentUser,
+  });
+};
+
+export const useLoginMutation = () => {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: login,
+    onSuccess: () => {
+      toast.success("Logged in successfully");
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      navigate("/");
+    },
+  });
+};
+
+export const useRegisterMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: register,
+    onSuccess: () => {
+      toast.success("Account created successfully");
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+    },
+  });
+};
+
+export const useLogoutMutation = () => {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      toast.success("Logged out successfully");
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      navigate("/auth");
+    },
+  });
+};
