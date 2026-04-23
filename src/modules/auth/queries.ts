@@ -17,9 +17,9 @@ export const useLoginMutation = () => {
 
   return useMutation({
     mutationFn: login,
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Logged in successfully");
-      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      queryClient.setQueryData(["authUser"], data?.user ?? data);
       navigate("/");
     },
   });
@@ -30,9 +30,13 @@ export const useRegisterMutation = () => {
 
   return useMutation({
     mutationFn: register,
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Account created successfully");
-      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      if (data?.user) {
+        queryClient.setQueryData(["authUser"], data.user);
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      }
     },
   });
 };
@@ -45,7 +49,7 @@ export const useLogoutMutation = () => {
     mutationFn: logout,
     onSuccess: () => {
       toast.success("Logged out successfully");
-      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      queryClient.clear();
       navigate("/auth");
     },
   });

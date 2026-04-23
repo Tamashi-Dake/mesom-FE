@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getDisplaySettings } from "@/modules/settings/api";
+import { useCurrentUser } from "./authProvider";
 
 interface ThemeContextValue {
   theme: string;
@@ -13,9 +14,11 @@ export const ThemeContext = createContext<ThemeContextValue | undefined>(
 );
 
 export function ThemeContextProvider({ children }: { children: ReactNode }) {
+  const { currentUser } = useCurrentUser();
   const displayQuery = useQuery({
     queryKey: ["display"],
     queryFn: getDisplaySettings,
+    enabled: !!currentUser,
   });
 
   const [theme, setTheme] = useState("light");

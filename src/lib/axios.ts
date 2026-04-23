@@ -1,5 +1,6 @@
-import axios from "axios";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import toast from "react-hot-toast";
+import queryClient from "./queryClient";
 
 const axiosInstance = axios.create({
   withCredentials: true,
@@ -7,15 +8,44 @@ const axiosInstance = axios.create({
   timeout: 10000,
 });
 
-// Centralised response error handling.
-// 401 is intentionally NOT redirected here — the authProvider's useEffect
-// handles auth redirects via React Router (soft navigation, no page reload).
+type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+
+let isRefreshing = false;
+
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
-    const status: number | undefined = error.response?.status;
+  async (error: AxiosError) => {
+    const original = error.config as RetriableConfig | undefined;
+    const status = error.response?.status;
+
+    if (status === 401 && original && !original._retry) {
+      const url = original.url ?? "";
+      if (url.includes("/auth/refresh") || url.includes("/auth/login")) {
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) return Promise.reject(error);
+
+      original._retry = true;
+      isRefreshing = true;
+      try {
+        await axiosInstance.post("/auth/refresh");
+        return axiosInstance(original);
+      } catch (refreshError) {
+        queryClient.clear();
+        if (window.location.pathname !== "/auth") {
+          window.location.href = "/auth";
+        }
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     const message: string =
-      error.response?.data?.message || error.message || "An error occurred";
+      (error.response?.data as { message?: string })?.message ||
+      error.message ||
+      "An error occurred";
 
     if (status === 403) {
       toast.error(message || "Access forbidden");

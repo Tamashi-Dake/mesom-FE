@@ -6,8 +6,6 @@ import {
   useState,
 } from "react";
 import { io, Socket } from "socket.io-client";
-import { EUserSocketEvents } from "@/config/socketEvents";
-import toast from "react-hot-toast";
 import { useCurrentUser } from "./authProvider";
 
 const BACKEND_URL =
@@ -29,22 +27,16 @@ export const SocketProvider = ({ children }: IProps) => {
     if (!currentUser) return;
 
     const socket = io(BACKEND_URL, {
-      query: { userId: (currentUser as { _id: string })._id },
+      withCredentials: true,
     });
 
     setSocket(socket);
 
     socket.on("connect", () => console.log("Socket connected"));
     socket.on("disconnect", () => console.log("Socket disconnected"));
-
-    socket.emit(
-      EUserSocketEvents.setup,
-      (currentUser as { _id: string })._id,
-      (currentUser as { displayName: string }).displayName,
+    socket.on("connect_error", (err) =>
+      console.error("Socket connect error:", err.message),
     );
-    socket.on(EUserSocketEvents.online, (displayName: string) => {
-      toast.success(`Hello ${displayName}`);
-    });
 
     return () => {
       socket.disconnect();

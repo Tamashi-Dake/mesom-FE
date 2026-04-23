@@ -26,3 +26,8 @@ export const logout = async () => {
   const response = await api.post("/auth/logout");
   return response.data;
 };
+
+export const refreshSession = async () => {
+  const response = await api.post("/auth/refresh");
+  return response.data;
+};
