@@ -10,10 +10,11 @@ import { io, Socket } from "socket.io-client";
 import { EUserSocketEvents } from "@/enums";
 import toast from "react-hot-toast";
 import { useCurrentUser } from "./authContext";
+import { config } from "@/constants";
 
 const BACKEND_URL =
-  import.meta.env.MODE === "development"
-    ? import.meta.env.VITE_BACKEND_URL
+ config.env.VITE_ENV === "development"
+    ? config.env.VITE_BACKEND_URL
     : "/";
 
 const SocketContext = createContext<Socket | null>(null);

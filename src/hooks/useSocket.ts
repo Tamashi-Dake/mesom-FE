@@ -1,3 +1,4 @@
+import { config } from "@/constants";
 import { EUserSocketEvents } from "@/enums";
 import { IUser } from "@/types";
 import { useEffect, useRef } from "react";
@@ -5,8 +6,8 @@ import toast from "react-hot-toast";
 import { io, Socket } from "socket.io-client";
 
 const BASE_URL =
-  import.meta.env.MODE === "development"
-    ? import.meta.env.VITE_BACKEND_URL
+  config.env.VITE_ENV === "development"
+    ? config.env.VITE_BACKEND_URL
     : "/";
 
 export function useSocket(authUser: IUser) {

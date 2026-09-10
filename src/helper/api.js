@@ -1,8 +1,9 @@
+import { config } from "@/constants";
 import axios from "axios";
 
 const axiosInstance = axios.create({
   withCredentials: true,
-  baseURL: `${import.meta.env.VITE_BACKEND_URL}`,
+  baseURL: config.env.VITE_BACKEND_URL,
   timeout: 10000,
   // TODO: Json conflict with form data when uploading files
   // headers: {
